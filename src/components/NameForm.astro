@@ -1,0 +1,13 @@
+---
+interface Props { title: string; action: string; defaultName?: string; cancel?: string }
+const { title, action, defaultName = 'Curious Capybara', cancel = 'Go to homepage' } = Astro.props;
+---
+<form id="name-form" class="entry-card" novalidate>
+  <h1>{title}</h1>
+  <label id="name-label" for="name">Your name</label>
+  <input id="name" name="name" autocomplete="nickname" required value={defaultName} data-name aria-describedby="name-error" />
+  <p id="name-error" class="form-error" role="alert"></p>
+  <slot />
+  <p id="form-error" class="form-error" role="alert"></p>
+  <div class="actions"><a class="button secondary" href="/">{cancel}</a><button type="submit">{action}</button></div>
+</form>

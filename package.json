@@ -1,0 +1,27 @@
+{
+  "name": "planning-poker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "build": "astro build",
+    "check": "astro check && tsc --noEmit -p worker/tsconfig.json",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:local": "node tests/local.mjs"
+  },
+  "dependencies": {
+    "astro": "^7.4.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.6",
+    "@cloudflare/workers-types": "^5.20260708.1",
+    "typescript": "^5.9.3",
+    "wrangler": "4.110.0",
+    "ws": "^8.18.0"
+  }
+}

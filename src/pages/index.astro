@@ -1,0 +1,73 @@
+---
+import Layout from '../components/Layout.astro';
+import NameForm from '../components/NameForm.astro';
+---
+<Layout title="Welcome to Scrum Poker">
+  <main class="home">
+    <section id="welcome" class="hero">
+      <div class="hero-cards" aria-hidden="true"><img src="/assets/Cards-left.png" width="351" height="900" alt=""/><img src="/assets/Cards-right.png" width="315" height="900" alt=""/></div>
+      <span class="badge">No registration required</span>
+      <h1>Welcome to Scrum Poker</h1><p>Estimate together. Align faster.</p>
+      <div class="hero-actions"><p>Ready to start?</p><div class="actions"><button id="show-create">Create room</button><button id="show-join" class="secondary">Join room</button></div></div>
+    </section>
+    <section id="create-screen" class="entry" hidden>
+      <NameForm title="Welcome, Scrum Master!" action="Create room" cancel="Cancel">
+        <label for="team-name">Choose a name for your team (optional)</label>
+        <input id="team-name" name="teamName" value="Sprint Wizards" placeholder="Sprint Wizards" data-name aria-describedby="team-name-error" />
+        <p id="team-name-error" class="form-error" role="alert"></p>
+        <fieldset class="deck-options"><legend>Choose card deck</legend>
+          <label><input type="radio" name="deck" value="default" checked/><span class="card"><img src="/assets/card-0.svg" width="120" height="169" alt=""/></span><span>Default</span></label>
+          <label class="unavailable"><input type="radio" name="deck" value="memes" disabled/><span class="card"><img src="/assets/memes-preview.png" width="120" height="169" alt=""/></span><span>Memes</span><small>Coming soon</small></label>
+        </fieldset>
+      </NameForm>
+    </section>
+    <section id="join-screen" class="entry" hidden><form id="invite-form" class="entry-card" novalidate>
+      <h1>Join existing room</h1><label for="invite-link">Paste the link shared by your host</label>
+      <input id="invite-link" type="text" inputmode="url" required placeholder="https://…/room?id=…" aria-describedby="invite-error"/>
+      <p id="invite-error" class="form-error" role="alert"></p>
+      <div class="actions"><a class="button secondary" href="/">Go back</a><button>Continue</button></div>
+    </form></section>
+    <p id="message" role="status" aria-live="polite"></p>
+  </main>
+</Layout>
+<script>
+  import { post } from '../scripts/http';
+  import { inviteId } from '../scripts/invite';
+  import { validateNames } from '../scripts/forms';
+  const form = document.querySelector<HTMLFormElement>('#name-form')!;
+  for (const screen of ['create', 'join']) document.getElementById(`show-${screen}`)!.onclick = () => {
+    document.getElementById('welcome')!.hidden = true;
+    document.getElementById(`${screen}-screen`)!.hidden = false;
+    document.querySelector<HTMLInputElement>(`#${screen}-screen input`)!.focus();
+  };
+  if (new URLSearchParams(location.search).has('join')) document.getElementById('show-join')!.click();
+  form.onsubmit = async event => {
+    event.preventDefault();
+    if (!validateNames(form)) return;
+    const button = form.querySelector('button')!;
+    button.disabled = true;
+    const message = document.querySelector('#form-error')!;
+    message.textContent = '';
+    document.getElementById('message')!.textContent = 'Creating your room…';
+    try {
+      const data = new FormData(form);
+      const { roomId } = await post('/api/rooms', { name: data.get('name'), teamName: data.get('teamName') });
+      location.assign(`/room?id=${roomId}`);
+    } catch (error) {
+      message.textContent = `Room creation failed. ${(error as Error).message}`;
+      document.getElementById('message')!.textContent = '';
+      button.disabled = false;
+    }
+  };
+  document.querySelector<HTMLFormElement>('#invite-form')!.onsubmit = event => {
+    event.preventDefault();
+    try {
+      const id = inviteId(document.querySelector<HTMLInputElement>('#invite-link')!.value, location.origin);
+      location.assign(`/room?id=${id}`);
+    } catch (error) {
+      document.getElementById('invite-error')!.textContent = (error as Error).message;
+      const input = document.querySelector<HTMLInputElement>('#invite-link')!;
+      input.setAttribute('aria-invalid', 'true'); input.focus();
+    }
+  };
+</script>

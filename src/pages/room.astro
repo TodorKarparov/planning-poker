@@ -1,0 +1,45 @@
+---
+import Layout from '../components/Layout.astro';
+import NameForm from '../components/NameForm.astro';
+import { CARDS } from '../../shared/protocol';
+---
+<Layout title="Room">
+  <header id="room-header" hidden>
+    <a class="welcome-team" href="/"><span class="team-avatar" aria-hidden="true"><img src="/assets/team-panda.png" width="25" height="25" alt=""/></span><span>Welcome,<br/><strong id="team-name">Sprint Wizards</strong></span></a>
+    <p id="connection" role="status">Connecting…</p>
+    <button id="invite" class="secondary" aria-expanded="false" aria-controls="share">Invite people</button>
+  </header>
+  <main>
+    <section id="join" class="entry" hidden><NameForm title="Almost there!" action="Enter room" defaultName="Playful Penguin"/></section>
+    <p id="message" role="status" aria-live="polite">Connecting to your room…</p>
+    <section id="unavailable" class="entry" hidden><div class="entry-card"><img src="/assets/warning-icon.png" width="36" height="36" alt=""/><h1 id="unavailable-title" tabindex="-1">Room unavailable</h1><p id="unavailable-reason"></p><div class="actions"><a class="button secondary" href="/">Go to homepage</a><a class="button" href="/?join">Join another room</a></div></div></section>
+    <section id="game" hidden aria-label="Planning poker room">
+      <div class="table-layout">
+        <ul id="participants" aria-label="Participants">{Array.from({length:8}, (_, i) => <li class="empty" aria-hidden="true" data-seat={i}><span class="avatar"></span><span class="participant-name"></span><small></small></li>)}</ul>
+        <section class="table" aria-label="Round controls">
+          <span id="table-icon" class="table-icon" aria-hidden="true" hidden><img id="table-art" src="/assets/invite-icon.png" width="56" height="56" alt=""/></span>
+          <h1 id="summary" tabindex="-1">Invite your team</h1>
+          <p id="timer" role="timer" aria-label="Voting time remaining" hidden>5:00</p>
+          <p id="round" class="muted"></p>
+          <section id="results" aria-label="Voting results" hidden><div class="average"><span>Average</span><strong id="average"></strong></div><ul id="distribution" aria-label="Vote distribution"></ul></section>
+          <div id="table-share" class="link-bar" hidden><label class="sr-only" for="table-link">Invite link</label><input id="table-link" readonly/><button data-copy="table-link">Copy link</button></div>
+          <button id="host-action" hidden>Start voting</button>
+          <p id="guidance"></p>
+          <div id="confetti" aria-hidden="true"></div>
+        </section>
+      </div>
+      <section class="hand" aria-label="Your cards">
+        <div class="own-card"><h2>Your card</h2><button id="own" class="card" aria-label="Choose your card" aria-expanded="false" aria-controls="deck" disabled><img id="own-art" src="/assets/card-unselected.png" width="168" height="259" alt=""/></button><p id="vote-status" aria-live="polite">Available once voting starts</p></div>
+        <fieldset id="deck" disabled hidden><legend class="sr-only">Pick your card</legend><div class="cards">{CARDS.map(card => <button type="button" class="card" data-card={card} aria-pressed="false" aria-label={`Vote ${card}`}><img src={`/assets/card-${card}.svg`} width="120" height="169" alt=""/></button>)}</div></fieldset>
+      </section>
+    </section>
+    <section id="share" class="share" aria-label="Invite people" hidden><button id="close-share" class="close" aria-label="Close invitation">×</button><label for="link">Share this link to invite friends to the room</label><div class="link-bar"><input id="link" readonly/><button data-copy="link">Copy link</button></div></section>
+    <dialog id="recovery" aria-labelledby="recovery-title" aria-describedby="recovery-copy">
+      <img id="recovery-art" class="spinner" src="/assets/loading-spinner.png" width="56" height="56" alt=""/>
+      <h2 id="recovery-title" tabindex="-1">Connection lost</h2>
+      <p id="recovery-copy" role="status">Reconnecting to restore your seat and saved vote. Votes cannot be sent yet.</p>
+      <div class="actions"><a class="button secondary" href="/">Leave room</a><button id="retry" hidden>Try again</button></div>
+    </dialog>
+  </main>
+</Layout>
+<script src="../scripts/room.ts"></script>
